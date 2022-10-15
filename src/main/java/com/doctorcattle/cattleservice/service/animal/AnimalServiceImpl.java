@@ -29,7 +29,7 @@ public class AnimalServiceImpl extends RestTemplateService implements AnimalServ
 		if (null == dto.getFarmId()) {
 			throw new UpdateAnimalDataException("No Farm Id Found");
 		}
-		boolean farmExists = getForObject("doctor-cattle-customer-service.herokuapp.com",
+		boolean farmExists = getForObject("CUSTOMER-SERVICE",
 				"/api/customer-service/company/farm-exists/" + dto.getFarmId(), Boolean.class);
 		if (!farmExists) {
 			throw new UpdateAnimalDataException("No Farm Exists With Id : " + dto.getFarmId());
