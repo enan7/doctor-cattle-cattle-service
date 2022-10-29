@@ -22,15 +22,15 @@ public class AnimalServiceImpl extends RestTemplateService implements AnimalServ
 	@Autowired
 	private AnimalRepository animalRepository;
 
-	@Autowired
-	private RestTemplate restTemplate;
+//	@Autowired
+//	private RestTemplate restTemplate;
 
 	public AnimalDTO updateDate(AnimalDTO dto) throws UpdateAnimalDataException {
 		if (null == dto.getFarmId()) {
 			throw new UpdateAnimalDataException("No Farm Id Found");
 		}
-		boolean farmExists = getForObject("CUSTOMER-SERVICE",
-				"/api/customer-service/company/farm-exists/" + dto.getFarmId(), Boolean.class);
+		RestTemplate restTemplate = new RestTemplate();
+		boolean farmExists = getForObject("CUSTOMER-SERVICE","doctor-cattle-customer-service.herokuapp.com/api/customer-service/company/farm-exists/" + dto.getFarmId(), Boolean.class);
 		if (!farmExists) {
 			throw new UpdateAnimalDataException("No Farm Exists With Id : " + dto.getFarmId());
 		}
