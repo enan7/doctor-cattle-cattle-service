@@ -9,12 +9,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.doctorcattle.cattleservice.adapter.animal.AnimalAdapter;
+import com.doctorcattle.cattleservice.controller.request.farm.IsFarmExistsRequest;
 import com.doctorcattle.cattleservice.dto.animal.AnimalDTO;
 import com.doctorcattle.cattleservice.entity.animal.Animal;
 import com.doctorcattle.cattleservice.exception.animal.UpdateAnimalDataException;
 import com.doctorcattle.cattleservice.exception.farm.FarmNotFoundException;
 import com.doctorcattle.cattleservice.repositories.animal.AnimalRepository;
 import com.doctorcattle.cattleservice.service.RestTemplateService;
+import com.doctorcattle.cattleservice.service.UrlMapper;
 
 @Service
 public class AnimalServiceImpl extends RestTemplateService implements AnimalService {
@@ -22,24 +24,25 @@ public class AnimalServiceImpl extends RestTemplateService implements AnimalServ
 	@Autowired
 	private AnimalRepository animalRepository;
 
-//	@Autowired
-//	private RestTemplate restTemplate;
 
 	public AnimalDTO updateDate(AnimalDTO dto) throws UpdateAnimalDataException {
+		IsFarmExistsRequest request = new IsFarmExistsRequest();
 		if (null == dto.getFarmId()) {
 			throw new UpdateAnimalDataException("No Farm Id Found");
 		}
-		RestTemplate restTemplate = new RestTemplate();
-		boolean farmExists = getForObject("CUSTOMER-SERVICE","doctor-cattle-customer-service.herokuapp.com/api/customer-service/company/farm-exists/" + dto.getFarmId(), Boolean.class);
+		Animal animal = findByDeviceNumber(dto.getDeviceNumber());
+		if (animal == null) {
+			animal = new Animal();
+			//If animal is newly registered then live stock should gets updated
+			request.setUpdateLiveStock(true);
+		}
+		request.setFarmId(dto.getFarmId());
+		boolean farmExists = postForEntity(UrlMapper.CHECK_FARM_AND_UPDATE_LIVESTOCK, request, Boolean.class);
 		if (!farmExists) {
 			throw new UpdateAnimalDataException("No Farm Exists With Id : " + dto.getFarmId());
 		}
 		if (null == dto.getDeviceNumber()) {
 			throw new UpdateAnimalDataException("Device Number is required ");
-		}
-		Animal animal = findByDeviceNumber(dto.getDeviceNumber());
-		if (animal == null) {
-			animal = new Animal();
 		}
 		animal.setDeviceNumber(dto.getDeviceNumber());
 		animal.setFarmId(dto.getFarmId());
